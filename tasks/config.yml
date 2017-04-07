@@ -1,0 +1,33 @@
+---
+- name: Ensure volume group
+  lvg:
+    force: '{{ item.force | default(omit) }}'
+    pesize: '{{ item.pesize | default(omit) }}'
+    pvs: '{{ item.pvs | default(omit) }}'
+    state: '{{ item.state | default(omit) }}'
+    vg: '{{ item.name | default(item.vg) | default(omit) }}'
+    vg_options: '{{ item.vg_options | default(omit) }}'
+  with_items: '{{ lvm_volume_groups }}'
+
+- name: Ensure logical volume
+  lvol:
+    vg: '{{ item.vg }}'
+    lv: '{{ item.name }}'
+    size: '{{ item.size | default(omit) }}'
+  with_items: '{{ lvm_logical_volumes }}'
+
+- name: Ensure filesystem
+  filesystem:
+    fstype: '{{ item.fstype }}'
+    dev: /dev/{{ item.vg }}/{{ item.name }}
+    resizefs: '{% if item.fstype != "btrfs" %}yes{% else %}no{% endif %}'
+  with_items: '{{ lvm_logical_volumes }}'
+
+- name: Ensure mount point
+  mount:
+    name: '{{ item.mount_point }}'
+    fstype: '{{ item.fstype }}'
+    src: '/dev/{{ item.vg }}/{{ item.name }}'
+    state: mounted
+  when: item.mount_point is defined
+  with_items: '{{ lvm_logical_volumes }}'

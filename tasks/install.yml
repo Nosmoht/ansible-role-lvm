@@ -1,0 +1,5 @@
+---
+- name: Ensure package
+  package:
+    name: '{{ lvm_package_name }}'
+    state: '{{ lvm_package_state }}'

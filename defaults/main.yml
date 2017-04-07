@@ -1,0 +1,4 @@
+---
+lvm_package_state: present
+lvm_volume_groups: []
+lvm_logical_volumes: []
